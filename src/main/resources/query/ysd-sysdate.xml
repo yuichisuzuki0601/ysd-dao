@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ysd="http://ysd.co.jp/ysd"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://ysd.co.jp/ysd
+	http://ysd.co.jp/ysd.xsd">
+
+	<ysd:query id="ysdSysdate">
+		<ysd:source>
+			SELECT
+				CURRENT_TIMESTAMP
+			FROM
+				dual
+		</ysd:source>
+	</ysd:query>
+
+</beans>
