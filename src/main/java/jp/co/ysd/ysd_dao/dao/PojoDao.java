@@ -1,6 +1,7 @@
 package jp.co.ysd.ysd_dao.dao;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,8 +22,11 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.CaseFormat;
 
+import jp.co.ysd.ysd_dao.annotation.Snapshot;
 import jp.co.ysd.ysd_dao.bean.Query;
 import jp.co.ysd.ysd_dao.exception.OverUpdateException;
 import jp.co.ysd.ysd_dao.exception.UnableNarrowDownException;
@@ -35,6 +39,11 @@ import jp.co.ysd.ysd_dao.util.MapBuilder;
  */
 @Component
 public class PojoDao extends BasicDao {
+
+	private static final ObjectMapper SNAPSHOT_MAPPER = new ObjectMapper();
+	static {
+		SNAPSHOT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+	}
 
 	private Logger l = LoggerFactory.getLogger(getClass());
 
@@ -61,19 +70,21 @@ public class PojoDao extends BasicDao {
 					}
 					try {
 						field.setAccessible(true);
-						field.set(obj,
-								rs.getObject(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, propertyName)));
+						String k_e_y = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, propertyName);
+						Object value = rs.getObject(k_e_y);
+						if (field.getAnnotation(Snapshot.class) != null && value != null) {
+							value = SNAPSHOT_MAPPER.readValue(value.toString(), field.getType());
+						}
+						field.set(obj, value);
 					} catch (SQLException e) {
 						// pojo側にプロパティはあるがselectの結果に含まれていない場合はsetせずに返す
 						if (!"S1093".equals(e.getSQLState()) && !"S0022".equals(e.getSQLState())) {
-							l.error("An error has occurred.", e);
+							throw new IOException(e);
 						}
-					} catch (IllegalAccessException e) {
-						l.error("An error has occurred.", e);
 					}
 				}
 				return obj;
-			} catch (InstantiationException | IllegalAccessException e) {
+			} catch (IOException | InstantiationException | IllegalAccessException e) {
 				l.error("An error has occurred.", e);
 			}
 			return null;
@@ -102,6 +113,7 @@ public class PojoDao extends BasicDao {
 			proc.process(getPojo(rs));
 			return null;
 		}
+
 	}
 
 	private SqlParameterSource getSqlParameterSource(Object obj) {
