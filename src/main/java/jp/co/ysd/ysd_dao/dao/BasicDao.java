@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import jp.co.ysd.ysd_dao.bean.Query;
 import jp.co.ysd.ysd_dao.exception.OverUpdateException;
-import jp.co.ysd.ysd_dao.util.MapBuilder;
+import jp.co.ysd.ysd_util.map.MapBuilder;
 
 /**
  *

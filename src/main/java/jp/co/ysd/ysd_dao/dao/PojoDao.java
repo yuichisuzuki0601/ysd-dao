@@ -30,7 +30,7 @@ import jp.co.ysd.ysd_dao.annotation.Snapshot;
 import jp.co.ysd.ysd_dao.bean.Query;
 import jp.co.ysd.ysd_dao.exception.OverUpdateException;
 import jp.co.ysd.ysd_dao.exception.UnableNarrowDownException;
-import jp.co.ysd.ysd_dao.util.MapBuilder;
+import jp.co.ysd.ysd_util.map.MapBuilder;
 
 /**
  *

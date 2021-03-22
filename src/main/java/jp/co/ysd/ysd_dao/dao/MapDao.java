@@ -23,7 +23,7 @@ import com.google.common.base.CaseFormat;
 
 import jp.co.ysd.ysd_dao.bean.Query;
 import jp.co.ysd.ysd_dao.exception.UnableNarrowDownException;
-import jp.co.ysd.ysd_dao.util.MapBuilder;
+import jp.co.ysd.ysd_util.map.MapBuilder;
 
 /**
  *
