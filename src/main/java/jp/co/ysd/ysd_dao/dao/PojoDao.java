@@ -6,13 +6,17 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -47,6 +51,9 @@ public class PojoDao extends BasicDao {
 
 	private Logger l = LoggerFactory.getLogger(getClass());
 
+	@Value("${database.timezone:UTC}")
+	private String timezone;
+
 	private class SimpleRowMapper<T> implements RowMapper<T> {
 		private Class<T> clazz;
 
@@ -74,6 +81,9 @@ public class PojoDao extends BasicDao {
 						Object value = rs.getObject(k_e_y);
 						if (field.getAnnotation(Snapshot.class) != null && value != null) {
 							value = SNAPSHOT_MAPPER.readValue(value.toString(), field.getType());
+						}
+						if (value instanceof LocalDateTime && field.getType() == Date.class) {
+							value = Date.from(((LocalDateTime) value).atZone(ZoneId.of(timezone)).toInstant());
 						}
 						field.set(obj, value);
 					} catch (SQLException e) {
