@@ -13,7 +13,15 @@
 			<xsd:complexContent>
 				<xsd:extension base="beans:identifiedType">
 					<xsd:sequence>
-						<xsd:element name="source" type="xsd:string" minOccurs="1" maxOccurs="1" />
+						<xsd:element name="source" minOccurs="1" maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:simpleContent>
+									<xsd:extension base="xsd:string">
+										<xsd:attribute name="name" type="xsd:string" use="optional" />
+									</xsd:extension>
+								</xsd:simpleContent>
+							</xsd:complexType>
+						</xsd:element>
 					</xsd:sequence>
 				</xsd:extension>
 			</xsd:complexContent>

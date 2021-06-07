@@ -1,8 +1,12 @@
 package jp.co.ysd.ysd_dao.bean;
 
+import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.*;
+
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 /**
  *
@@ -11,21 +15,28 @@ import java.util.Map.Entry;
  */
 public class Query {
 
-	private String source;
+	private Map<String, String> sources = new LinkedHashMap<>();
 
 	public Query() {
 	}
 
 	public Query(String source) {
-		setSource(source);
+		sources.put(UUID.randomUUID().toString(), source);
+	}
+
+	public Query(Map<String, String> sources) {
+		setSources(sources);
 	}
 
 	public String getSource() {
-		return source;
+		return String.join(" ", sources.values());
 	}
 
-	public void setSource(String source) {
-		this.source = source.replaceAll("[\\r|\\n|\\\t]", " ").trim().replaceAll(" {2,}", " ");
+	public void setSources(Map<String, String> sources) {
+		for (Entry<String, String> e : sources.entrySet()) {
+			e.setValue(e.getValue().replaceAll("[\\r|\\n|\\\t]", " ").trim().replaceAll(" {2,}", " "));
+		}
+		this.sources = sources;
 	}
 
 	public Query replace(String key, String value) {
@@ -35,16 +46,26 @@ public class Query {
 	}
 
 	public Query replace(Map<String, String> replaces) {
-		String result = source;
-		for (Entry<String, String> e : replaces.entrySet()) {
-			result = result.replace(e.getKey(), e.getValue());
+		Map<String, String> results = new LinkedHashMap<>();
+		for (Entry<String, String> source : sources.entrySet()) {
+			String result = source.getValue();
+			for (Entry<String, String> e : replaces.entrySet()) {
+				result = result.replace(e.getKey(), e.getValue());
+			}
+			results.put(source.getKey(), result);
 		}
-		return new Query(result);
+		return new Query(results);
+	}
+
+	public Query excluded(String... names) {
+		Map<String, String> newSources = new LinkedHashMap<>(sources);
+		stream(names).forEach(name -> newSources.remove(name));
+		return new Query(newSources);
 	}
 
 	@Override
 	public String toString() {
-		return source;
+		return getSource();
 	}
 
 }
