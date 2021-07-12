@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 /**
@@ -55,6 +56,24 @@ public class Query {
 			results.put(source.getKey(), result);
 		}
 		return new Query(results);
+	}
+
+	public Query iterated(String name, int count) {
+		Map<String, String> newSources = new LinkedHashMap<>();
+		for (Entry<String, String> source : sources.entrySet()) {
+			String key = source.getKey();
+			String orgSource = source.getValue();
+			if (count >= 1 && key.equals(name)) {
+				StringJoiner newSource = new StringJoiner(" ");
+				for (int i = 1; i <= count; ++i) {
+					newSource.add(orgSource.replaceAll("\\B:[^\\s]+\\b", "$0" + i));
+				}
+				newSources.put(key, newSource.toString());
+			} else {
+				newSources.put(key, orgSource);
+			}
+		}
+		return new Query(newSources);
 	}
 
 	public Query excluded(String... names) {
