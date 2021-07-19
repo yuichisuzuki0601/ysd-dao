@@ -15,8 +15,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.support.SqlLobValue;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.CaseFormat;
@@ -160,17 +158,6 @@ public class MapDao extends BasicDao {
 
 	public void fetch(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> params, MapDaoFetchProcess proc) {
 		nj.query(query.getSource(), getSqlParameterSource(params), new FetchRowMapper(proc));
-	}
-
-	public Long insert(Query query, Map<String, Object> map) {
-		return insert(this.nj, query, map);
-	}
-
-	public Long insert(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> map) {
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		nj.update(query.getSource(), new MapSqlParameterSource(map), keyHolder, new String[] { "id" });
-		Number key = keyHolder.getKey();
-		return key != null ? key.longValue() : null;
 	}
 
 }

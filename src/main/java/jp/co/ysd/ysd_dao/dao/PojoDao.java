@@ -9,10 +9,13 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +37,8 @@ import jp.co.ysd.ysd_dao.annotation.Snapshot;
 import jp.co.ysd.ysd_dao.bean.Query;
 import jp.co.ysd.ysd_dao.exception.OverUpdateException;
 import jp.co.ysd.ysd_dao.exception.UnableNarrowDownException;
+import jp.co.ysd.ysd_dao.strategy.DefaultPojoDaoStrategy;
+import jp.co.ysd.ysd_dao.strategy.PojoDaoStrategy;
 import jp.co.ysd.ysd_util.map.MapBuilder;
 
 /**
@@ -47,6 +52,16 @@ public class PojoDao extends BasicDao {
 	private static final ObjectMapper SNAPSHOT_MAPPER = new ObjectMapper();
 	static {
 		SNAPSHOT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+	}
+
+	private static PojoDaoStrategy strategy = new DefaultPojoDaoStrategy();
+
+	public static PojoDaoStrategy getStrategy() {
+		return strategy;
+	}
+
+	public static void setCustomStrategy(PojoDaoStrategy _strategy) {
+		strategy = _strategy;
 	}
 
 	private Logger l = LoggerFactory.getLogger(getClass());
@@ -123,7 +138,6 @@ public class PojoDao extends BasicDao {
 			proc.process(getPojo(rs));
 			return null;
 		}
-
 	}
 
 	private SqlParameterSource getSqlParameterSource(Object obj) {
@@ -151,12 +165,20 @@ public class PojoDao extends BasicDao {
 		return params;
 	}
 
+	public <T> List<T> query(Class<T> clazz) {
+		return query(this.nj, clazz);
+	}
+
+	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz) {
+		return query(nj, clazz, null);
+	}
+
 	public <T> List<T> query(Class<T> clazz, Query query) {
 		return query(this.nj, clazz, query);
 	}
 
 	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query) {
-		return nj.query(query.getSource(), new SimpleRowMapper<T>(clazz));
+		return query(nj, clazz, query, null);
 	}
 
 	public <T> List<T> query(Class<T> clazz, Query query, Map<String, Object> params) {
@@ -164,6 +186,12 @@ public class PojoDao extends BasicDao {
 	}
 
 	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, Map<String, Object> params) {
+		if (query == null) {
+			query = strategy.queryStrategy(clazz);
+		}
+		if (params == null) {
+			params = new HashMap<>();
+		}
 		return nj.query(query.getSource(), new MapSqlParameterSource(params), new SimpleRowMapper<T>(clazz));
 	}
 
@@ -172,14 +200,7 @@ public class PojoDao extends BasicDao {
 	}
 
 	public <T> T queryForSingle(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query) {
-		List<T> list = query(nj, clazz, query);
-		if (list.isEmpty()) {
-			return null;
-		} else if (list.size() == 1) {
-			return list.get(0);
-		} else {
-			throw new UnableNarrowDownException(query);
-		}
+		return queryForSingle(nj, clazz, query, null);
 	}
 
 	public <T> T queryForSingle(Class<T> clazz, Query query, Map<String, Object> params) {
@@ -198,19 +219,61 @@ public class PojoDao extends BasicDao {
 		}
 	}
 
+	public <T> T queryById(Class<T> clazz, long id) {
+		return queryById(clazz, null, id);
+	}
+
 	public <T> T queryById(Class<T> clazz, Query query, long id) {
 		return queryById(this.nj, clazz, query, id);
 	}
 
+	public <T> T queryById(NamedParameterJdbcTemplate nj, Class<T> clazz, long id) {
+		return queryById(this.nj, clazz, null, id);
+	}
+
 	public <T> T queryById(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, long id) {
+		if (query == null) {
+			query = strategy.queryByIdStrategy(clazz);
+		}
 		return queryForSingle(nj, clazz, query, new MapBuilder("id", id).build());
+	}
+
+	private List<Long> boxingIds(long... ids) {
+		return Arrays.stream(ids).boxed().collect(Collectors.toList());
+	}
+
+	public <T> List<T> queryByIds(Class<T> clazz, long... ids) {
+		return queryByIds(clazz, boxingIds(ids));
+	}
+
+	public <T> List<T> queryByIds(Class<T> clazz, List<Long> ids) {
+		return queryByIds(clazz, null, ids);
+	}
+
+	public <T> List<T> queryByIds(Class<T> clazz, Query query, long... ids) {
+		return queryByIds(this.nj, clazz, query, boxingIds(ids));
 	}
 
 	public <T> List<T> queryByIds(Class<T> clazz, Query query, List<Long> ids) {
 		return queryByIds(this.nj, clazz, query, ids);
 	}
 
+	public <T> List<T> queryByIds(NamedParameterJdbcTemplate nj, Class<T> clazz, long... ids) {
+		return queryByIds(nj, clazz, null, boxingIds(ids));
+	}
+
+	public <T> List<T> queryByIds(NamedParameterJdbcTemplate nj, Class<T> clazz, List<Long> ids) {
+		return queryByIds(nj, clazz, null, ids);
+	}
+
+	public <T> List<T> queryByIds(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, long... ids) {
+		return queryByIds(nj, clazz, query, boxingIds(ids));
+	}
+
 	public <T> List<T> queryByIds(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, List<Long> ids) {
+		if (query == null) {
+			query = strategy.queryByIdsStrategy(clazz);
+		}
 		return query(nj, clazz, query, new MapBuilder("ids", ids).build());
 	}
 

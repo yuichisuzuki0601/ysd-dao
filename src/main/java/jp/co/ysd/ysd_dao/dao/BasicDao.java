@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 import jp.co.ysd.ysd_dao.bean.Query;
@@ -63,6 +65,17 @@ public abstract class BasicDao {
 			}
 		}
 		return Collections.emptyList();
+	}
+
+	public Long insert(Query query, Map<String, Object> map) {
+		return insert(this.nj, query, map);
+	}
+
+	public Long insert(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> map) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		nj.update(query.getSource(), new MapSqlParameterSource(map), keyHolder, new String[] { "id" });
+		Number key = keyHolder.getKey();
+		return key != null ? key.longValue() : null;
 	}
 
 	public int update(Query query, Map<String, Object> params) {
