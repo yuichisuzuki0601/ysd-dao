@@ -193,7 +193,7 @@ public class PojoDao extends BasicDao {
 		if (params == null) {
 			params = new HashMap<>();
 		}
-		int count = ThreadCache.getOrDefault("sql-count", 0);
+		int count = ThreadCache.getOrDefault("sql-count", 1);
 		l.debug(count + ": " + query.getSource());
 		ThreadCache.put("sql-count", count + 1);
 		return nj.query(query.getSource(), new MapSqlParameterSource(params), new SimpleRowMapper<T>(clazz));
