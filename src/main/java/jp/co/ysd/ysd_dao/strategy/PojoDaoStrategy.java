@@ -17,6 +17,12 @@ public interface PojoDaoStrategy {
 
 	public Query queryByIdsStrategy(Class<?> clazz);
 
-	// TODO insert, update, updateById, deleteById, deleteByIds
+	public Query insertStrategy(Object obj);
+
+	public Query updateByIdStrategy(Object obj);
+
+	public Query deleteByIdStrategy(Class<?> clazz);
+
+	public Query deleteByIdsStrategy(Class<?> clazz);
 
 }

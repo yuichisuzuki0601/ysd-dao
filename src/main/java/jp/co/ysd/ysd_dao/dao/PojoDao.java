@@ -55,6 +55,7 @@ public class PojoDao extends BasicDao {
 		SNAPSHOT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 	}
 
+
 	private static PojoDaoStrategy strategy = new DefaultPojoDaoStrategy();
 
 	public static PojoDaoStrategy getStrategy() {
@@ -70,6 +71,7 @@ public class PojoDao extends BasicDao {
 	@Value("${database.timezone:UTC}")
 	private String timezone;
 
+	
 	private class SimpleRowMapper<T> implements RowMapper<T> {
 		private Class<T> clazz;
 
@@ -170,12 +172,12 @@ public class PojoDao extends BasicDao {
 		return query(this.nj, clazz);
 	}
 
-	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz) {
-		return query(nj, clazz, null);
-	}
-
 	public <T> List<T> query(Class<T> clazz, Query query) {
 		return query(this.nj, clazz, query);
+	}
+
+	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz) {
+		return query(nj, clazz, null);
 	}
 
 	public <T> List<T> query(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query) {
@@ -203,12 +205,12 @@ public class PojoDao extends BasicDao {
 		return queryForSingle(this.nj, clazz, query);
 	}
 
-	public <T> T queryForSingle(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query) {
-		return queryForSingle(nj, clazz, query, null);
-	}
-
 	public <T> T queryForSingle(Class<T> clazz, Query query, Map<String, Object> params) {
 		return queryForSingle(this.nj, clazz, query, params);
+	}
+
+	public <T> T queryForSingle(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query) {
+		return queryForSingle(nj, clazz, query, null);
 	}
 
 	public <T> T queryForSingle(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query,
@@ -285,12 +287,12 @@ public class PojoDao extends BasicDao {
 		fetch(this.nj, clazz, query, proc);
 	}
 
-	public <T> void fetch(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, PojoDaoFetchProcess<T> proc) {
-		nj.query(query.getSource(), new FetchRowMapper<T>(clazz, proc));
-	}
-
 	public <T> void fetch(Class<T> clazz, Query query, Map<String, Object> params, PojoDaoFetchProcess<T> proc) {
 		fetch(this.nj, clazz, query, params, proc);
+	}
+
+	public <T> void fetch(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, PojoDaoFetchProcess<T> proc) {
+		nj.query(query.getSource(), new FetchRowMapper<T>(clazz, proc));
 	}
 
 	public <T> void fetch(NamedParameterJdbcTemplate nj, Class<T> clazz, Query query, Map<String, Object> params,
@@ -298,11 +300,22 @@ public class PojoDao extends BasicDao {
 		nj.query(query.getSource(), new MapSqlParameterSource(params), new FetchRowMapper<T>(clazz, proc));
 	}
 
+	public Long insert(Object obj) {
+		return insert(this.nj, obj);
+	}
+
 	public Long insert(Query query, Object obj) {
 		return insert(this.nj, query, obj);
 	}
 
+	public Long insert(NamedParameterJdbcTemplate nj, Object obj) {
+		return insert(nj, null, obj);
+	}
+
 	public Long insert(NamedParameterJdbcTemplate nj, Query query, Object obj) {
+		if (query == null) {
+			query = strategy.insertStrategy(obj);
+		}
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		nj.update(query.getSource(), getSqlParameterSource(obj), keyHolder, new String[] { "id" });
 		Number key = keyHolder.getKey();
@@ -313,11 +326,23 @@ public class PojoDao extends BasicDao {
 		return update(this.nj, query, obj);
 	}
 
+	public int update(NamedParameterJdbcTemplate nj, Object obj) {
+		return update(nj, null, obj);
+	}
+
 	public int update(NamedParameterJdbcTemplate nj, Query query, Object obj) {
+
 		return nj.update(query.getSource(), getSqlParameterSource(obj));
 	}
 
+	public <T> T updateForSingle(T obj) {
+		return updateForSingle(null, obj);
+	}
+
 	public <T> T updateForSingle(Query query, T obj) {
+		if (query == null) {
+			query = strategy.updateByIdStrategy(obj);
+		}
 		int successCnt = update(query, obj);
 		if (successCnt == 0) {
 			return null;
@@ -326,6 +351,14 @@ public class PojoDao extends BasicDao {
 		} else {
 			throw new OverUpdateException(query);
 		}
+	}
+
+	public boolean deleteById(Class<?> clazz, long id) {
+		return deleteById(strategy.deleteByIdStrategy(clazz), id);
+	}
+
+	public int deleteByIds(Class<?> clazz, List<Long> ids) {
+		return deleteByIds(strategy.deleteByIdsStrategy(clazz), ids);
 	}
 
 }
