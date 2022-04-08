@@ -35,11 +35,11 @@ import com.google.common.base.CaseFormat;
 
 import jp.co.ysd.ysd_dao.annotation.Snapshot;
 import jp.co.ysd.ysd_dao.bean.Query;
-import jp.co.ysd.ysd_dao.cache.ThreadCache;
 import jp.co.ysd.ysd_dao.exception.OverUpdateException;
 import jp.co.ysd.ysd_dao.exception.UnableNarrowDownException;
 import jp.co.ysd.ysd_dao.strategy.DefaultPojoDaoStrategy;
 import jp.co.ysd.ysd_dao.strategy.PojoDaoStrategy;
+import jp.co.ysd.ysd_util.cache.YsdThreadCache;
 import jp.co.ysd.ysd_util.map.MapBuilder;
 
 /**
@@ -54,7 +54,6 @@ public class PojoDao extends BasicDao {
 	static {
 		SNAPSHOT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 	}
-
 
 	private static PojoDaoStrategy strategy = new DefaultPojoDaoStrategy();
 
@@ -71,7 +70,6 @@ public class PojoDao extends BasicDao {
 	@Value("${database.timezone:UTC}")
 	private String timezone;
 
-	
 	private class SimpleRowMapper<T> implements RowMapper<T> {
 		private Class<T> clazz;
 
@@ -195,9 +193,9 @@ public class PojoDao extends BasicDao {
 		if (params == null) {
 			params = new HashMap<>();
 		}
-		int count = ThreadCache.getOrDefault("sql-count", 1);
+		int count = YsdThreadCache.getOrDefault("sql-count", 1);
 		l.debug(count + ": " + query.getSource());
-		ThreadCache.put("sql-count", count + 1);
+		YsdThreadCache.put("sql-count", count + 1);
 		return nj.query(query.getSource(), new MapSqlParameterSource(params), new SimpleRowMapper<T>(clazz));
 	}
 
