@@ -1,6 +1,6 @@
 package jp.co.ysd.ysd_dao.definition;
 
-import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.*;
+import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.stream;
 
 import java.util.UUID;
 
@@ -26,6 +26,7 @@ public class QueryBeanDefinitionParser extends AbstractSingleBeanDefinitionParse
 
 	@Override
 	protected void doParse(Element element, BeanDefinitionBuilder bean) {
+		bean.addPropertyValue("id", element.getAttribute("id"));
 		bean.addPropertyValue("sources", stream(DomUtils.getChildElementsByTagName(element, "source")).end(s -> {
 			String name = s.getAttribute("name");
 			return !StringUtils.isEmpty(name) ? name : UUID.randomUUID().toString();

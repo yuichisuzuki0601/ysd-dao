@@ -41,6 +41,7 @@ import jp.co.ysd.ysd_dao.strategy.DefaultPojoDaoStrategy;
 import jp.co.ysd.ysd_dao.strategy.PojoDaoStrategy;
 import jp.co.ysd.ysd_util.cache.YsdThreadCache;
 import jp.co.ysd.ysd_util.map.MapBuilder;
+import jp.co.ysd.ysd_util.measure.SimpleMeasure;
 
 /**
  *
@@ -193,12 +194,22 @@ public class PojoDao extends BasicDao {
 		if (params == null) {
 			params = new HashMap<>();
 		}
+
+		SimpleMeasure m = null;
 		if (l.isDebugEnabled()) {
+			m = SimpleMeasure.start();
+		}
+
+		List<T> list = nj.query(query.getSource(), new MapSqlParameterSource(params), new SimpleRowMapper<T>(clazz));
+
+		if (l.isDebugEnabled()) {
+			m.stop();
 			int count = YsdThreadCache.getOrDefault("sql-count", 1);
-			l.debug(count + ": " + query.getSource());
+			l.debug(count + ": " + m.result() + ": " + query.getId() + ": " + query.getSource());
 			YsdThreadCache.put("sql-count", count + 1);
 		}
-		return nj.query(query.getSource(), new MapSqlParameterSource(params), new SimpleRowMapper<T>(clazz));
+
+		return list;
 	}
 
 	public <T> T queryForSingle(Class<T> clazz, Query query) {

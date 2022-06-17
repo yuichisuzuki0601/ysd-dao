@@ -1,6 +1,6 @@
 package jp.co.ysd.ysd_dao.bean;
 
-import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.*;
+import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.stream;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,6 +16,7 @@ import java.util.UUID;
  */
 public class Query {
 
+	private String id;
 	private Map<String, String> sources = new LinkedHashMap<>();
 
 	public Query() {
@@ -27,6 +28,14 @@ public class Query {
 
 	public Query(Map<String, String> sources) {
 		setSources(sources);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getSource() {
