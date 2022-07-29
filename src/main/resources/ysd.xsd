@@ -18,6 +18,7 @@
 								<xsd:simpleContent>
 									<xsd:extension base="xsd:string">
 										<xsd:attribute name="name" type="xsd:string" use="optional" />
+										<xsd:attribute name="defaultUse" type="xsd:boolean" use="optional" />
 									</xsd:extension>
 								</xsd:simpleContent>
 							</xsd:complexType>

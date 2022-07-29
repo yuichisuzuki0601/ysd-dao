@@ -1,6 +1,6 @@
 package jp.co.ysd.ysd_dao.definition;
 
-import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.stream;
+import static jp.co.ysd.ysd_util.stream.StreamWrapperFactory.*;
 
 import java.util.UUID;
 
@@ -11,6 +11,7 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 import jp.co.ysd.ysd_dao.bean.Query;
+import jp.co.ysd.ysd_dao.bean.Query.SourceContent;
 
 /**
  *
@@ -30,7 +31,11 @@ public class QueryBeanDefinitionParser extends AbstractSingleBeanDefinitionParse
 		bean.addPropertyValue("sources", stream(DomUtils.getChildElementsByTagName(element, "source")).end(s -> {
 			String name = s.getAttribute("name");
 			return !StringUtils.isEmpty(name) ? name : UUID.randomUUID().toString();
-		}, Element::getTextContent));
+		}, s -> {
+			String _defaultUse = s.getAttribute("defaultUse");
+			boolean defaultUse = !StringUtils.isEmpty(_defaultUse) ? Boolean.valueOf(_defaultUse) : true;
+			return new SourceContent(defaultUse, s.getTextContent());
+		}));
 	}
 
 }
