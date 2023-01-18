@@ -78,12 +78,20 @@ public abstract class BasicDao {
 		return key != null ? key.longValue() : null;
 	}
 
-	public int update(Query query, Map<String, Object> params) {
-		return update(this.nj, query, params);
+	public int update(Query query) {
+		return update(query, null);
 	}
 
-	public int update(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> params) {
-		return nj.update(query.getSource(), new MapSqlParameterSource(params));
+	public int update(Query query, Map<String, Object> map) {
+		return update(this.nj, query, map);
+	}
+
+	public int update(NamedParameterJdbcTemplate nj, Query query) {
+		return update(nj, query, null);
+	}
+
+	public int update(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> map) {
+		return nj.update(query.getSource(), map != null ? new MapSqlParameterSource(map) : null);
 	}
 
 	public boolean updateForSingle(Query query, Map<String, Object> params) {
@@ -97,12 +105,20 @@ public abstract class BasicDao {
 		}
 	}
 
-	public int delete(Query query, Map<String, Object> params) {
-		return delete(this.nj, query, params);
+	public int delete(Query query) {
+		return delete(query, null);
 	}
 
-	public int delete(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> params) {
-		return nj.update(query.getSource(), new MapSqlParameterSource(params));
+	public int delete(Query query, Map<String, Object> map) {
+		return delete(this.nj, query, map);
+	}
+
+	public int delete(NamedParameterJdbcTemplate nj, Query query) {
+		return delete(nj, query, null);
+	}
+
+	public int delete(NamedParameterJdbcTemplate nj, Query query, Map<String, Object> map) {
+		return update(nj, query, map);
 	}
 
 	public boolean deleteById(Query query, long id) {
