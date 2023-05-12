@@ -30,10 +30,10 @@ public class QueryBeanDefinitionParser extends AbstractSingleBeanDefinitionParse
 		bean.addPropertyValue("id", element.getAttribute("id"));
 		bean.addPropertyValue("sources", stream(DomUtils.getChildElementsByTagName(element, "source")).end(s -> {
 			String name = s.getAttribute("name");
-			return !StringUtils.isEmpty(name) ? name : UUID.randomUUID().toString();
+			return StringUtils.hasText(name) ? name : UUID.randomUUID().toString();
 		}, s -> {
 			String _defaultUse = s.getAttribute("defaultUse");
-			boolean defaultUse = !StringUtils.isEmpty(_defaultUse) ? Boolean.valueOf(_defaultUse) : true;
+			boolean defaultUse = StringUtils.hasText(_defaultUse) ? Boolean.valueOf(_defaultUse) : true;
 			return new SourceContent(defaultUse, s.getTextContent());
 		}));
 	}

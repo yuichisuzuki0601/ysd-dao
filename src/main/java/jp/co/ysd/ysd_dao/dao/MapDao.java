@@ -136,12 +136,12 @@ public class MapDao extends BasicDao {
 		return queryForSingle(nj, query, new MapBuilder("id", id).build());
 	}
 
-	public Map<String, Object> queryByIds(Query query, List<Long> ids) {
+	public List<Map<String, Object>> queryByIds(Query query, List<Long> ids) {
 		return queryByIds(this.nj, query, ids);
 	}
 
-	public Map<String, Object> queryByIds(NamedParameterJdbcTemplate nj, Query query, List<Long> ids) {
-		return queryForSingle(nj, query, new MapBuilder("ids", ids).build());
+	public List<Map<String, Object>> queryByIds(NamedParameterJdbcTemplate nj, Query query, List<Long> ids) {
+		return query(nj, query, new MapBuilder("ids", ids).build());
 	}
 
 	public void fetch(Query query, MapDaoFetchProcess proc) {
